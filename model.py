@@ -24,3 +24,21 @@ def softmax(Z):
     '''Row-wise softmax, shifted by row max to avoid overflow'''
     E = np.exp(Z - Z.max(axis=1, keepdims=True))
     return E / np.sum(E, axis=1, keepdims=True) # Sum along rows
+
+def log_softmax(Z): 
+    '''Row-wise log softmax, computed without forming negligible probabilities
+    Calculates log(softmax(Z)), passing log through softmax using log laws'''
+    Z = Z - Z.max(axis=1, keepdims=True)
+    return Z - np.log(np.exp(Z).sum(axis=1, keepdims=True))
+
+def forward(params, X):
+    '''Feed X through the network; return (P, cache) with cache holding X, Z1, A1.'''
+    Z1 = X @ params["W1"] + params["b1"]
+    A1 = relu(Z1)
+    Z2 = A1 @ params["W2"] + params["b2"]
+    P = softmax(Z2)
+    return P, {"X" : X, "Z1" : Z1, "A1" : A1, "Z2": Z2}
+
+def cross_entropy(logits, y):
+    '''Mean cross-entropy of integer labels against network logits (pre-softmax output)'''    
+    return -log_softmax(logits)[np.arange(len(y)), y].mean()
