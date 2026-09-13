@@ -21,7 +21,6 @@ def relu(Z):
     return np.maximum(Z, 0)
 
 def softmax(Z):
-    E = np.exp(Z)
+    '''Row-wise softmax, shifted by row max to avoid overflow'''
+    E = np.exp(Z - Z.max(axis=1, keepdims=True))
     return E / np.sum(E, axis=1, keepdims=True) # Sum along rows
-
-print(softmax(np.array([[1.0, 2.0, 3.0], [1000.0, 1001.0, 1002.0]])))
