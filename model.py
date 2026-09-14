@@ -2,11 +2,11 @@ import numpy as np
 import math
 
 def he_normal(rng, shape):
-    '''Random weights, scaled so ReLU pre-activation variance is preserved.'''
+    '''Random weights, scaled so ReLU pre-activation variance is preserved'''
     return rng.standard_normal(shape, dtype=np.float32) * math.sqrt(2 / shape[0])
 
 def init_params(n_in=784, n_hidden=128, n_out=10, seed=0):
-    '''Return {W1, b1, W2, b2} for an n_in -> n_hidden -> n_out ReLU network.'''
+    '''Return {W1, b1, W2, b2} for an n_in -> n_hidden -> n_out ReLU network'''
 
     rng = np.random.default_rng(seed)
     return {
@@ -42,3 +42,25 @@ def forward(params, X):
 def cross_entropy(logits, y):
     '''Mean cross-entropy of integer labels against network logits (pre-softmax output)'''    
     return -log_softmax(logits)[np.arange(len(y)), y].mean()
+
+def backward(params, cache, y):
+    '''Return {dW1, db1, dW2, db2}, the mean of the per-example gradients over the batch'''
+    W2 = params["W2"]
+    X, Z1, A1, Z2 = cache["X"], cache["Z1"], cache["A1"], cache["Z2"]
+    N = len(y)
+    
+    # dL/dZ2 = (P - y) / N
+    dZ2 = softmax(Z2)
+    dZ2[np.arange(len(y)), y] -= 1
+    dZ2 /= N 
+    
+    dW2 = A1.T @ dZ2
+    db2 = dZ2.sum(axis=0)
+    dA1 = dZ2 @ W2.T
+    
+    dZ1 = dA1 * (Z1 > 0)
+    
+    dW1 = np.transpose(X) @ dZ1
+    db1 = dZ1.sum(axis=0)
+
+    return {"dW1" : dW1, "db1" : db1, "dW2" : dW2, "db2" : db2}

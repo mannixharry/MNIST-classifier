@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 
 def load_idx(path):
-    """Read an IDX file and return its contents as a uint8 array."""
+    """Read an IDX file and return its contents as a uint8 array"""
     with open(path, "rb") as f:
         raw = f.read()
 
@@ -22,14 +22,14 @@ def load_idx(path):
     actual = len(raw) - header_len
     if actual != expected:
         raise ValueError(
-            f"{path}: truncated, expected {expected} bytes of data "
+            f"{path}: truncated, expected {expected} bytes of data"
             f"for shape {dims}, found {actual}"
         )
 
     return np.frombuffer(raw, dtype=np.uint8, offset=header_len).reshape(dims)
 
 def load_mnist(data_dir, n_val=5000, seed=0):
-    """Return flattened, scaled MNIST as (X_train, y_train, X_val, y_val, X_test, y_test)."""
+    """Return flattened, scaled MNIST as (X_train, y_train, X_val, y_val, X_test, y_test)"""
 
     d = Path(data_dir)
     
@@ -41,16 +41,16 @@ def load_mnist(data_dir, n_val=5000, seed=0):
     def labels(name):
         return load_idx(d / name).astype(np.int64)
     
-    x_train = images("train-images.idx3-ubyte")
+    X_train = images("train-images.idx3-ubyte")
     y_train = labels("train-labels.idx1-ubyte")
-    x_test  = images(d / "t10k-images.idx3-ubyte")
+    X_test  = images(d / "t10k-images.idx3-ubyte")
     y_test  = labels(d / "t10k-labels.idx1-ubyte")
     
-    if len(x_train) != len(y_train) or len(x_test) != len(y_test):
+    if len(X_train) != len(y_train) or len(X_test) != len(y_test):
         raise ValueError("image-label count mismatch")
     
-    perm = np.random.default_rng(seed).permutation(len(x_train))
+    perm = np.random.default_rng(seed).permutation(len(X_train))
     val, train = perm[:n_val], perm[n_val:] # Keep disjoint
     return (
-        x_train[train], y_train[train], x_train[val], y_train[val], x_test, y_test
+        X_train[train], y_train[train], X_train[val], y_train[val], X_test, y_test
     )
