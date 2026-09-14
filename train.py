@@ -4,7 +4,7 @@ from model import forward, backward, cross_entropy
 def sgd_step(params, grads, lr):
     '''Update every parameter in-place'''
     for key in params:
-        params[key] -= grads["d" + key]
+        params[key] -= lr * grads["d" + key]
 
 def iterate_batches(X, y, batch_size, rng):
     '''Yields (X_batch, y_batch) over one epoch, in a random order'''
@@ -33,6 +33,6 @@ def train(params, X_train, y_train, X_val, y_val, epochs=10, batch_size=64, lr=0
         
         history.append(dict(epoch=epoch, train_loss=tr_loss, train_acc=tr_acc, val_loss=va_loss, val_acc=va_acc))
         print(f"epoch {epoch:2d}  train loss {tr_loss:.4f} acc {tr_acc:6.2%}")
-        print(f"val loss {va_loss:.4f} acc {va_acc:6.2%}")
+        print(f"          val loss {va_loss:.4f} acc {va_acc:6.2%}\n")
         
     return history 
